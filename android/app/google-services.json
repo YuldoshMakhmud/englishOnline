@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "156138178237",
+    "project_id": "mumtozakids",
+    "storage_bucket": "mumtozakids.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:156138178237:android:3b4f443dd8e1e36417d9d4",
+        "android_client_info": {
+          "package_name": "uz.mumtozenglish.mumtozadmin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-b_MdZKBl1__-C4_VBqMazhvqz5uETaI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
