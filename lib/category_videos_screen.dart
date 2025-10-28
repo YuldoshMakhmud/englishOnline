@@ -1,29 +1,33 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'video_player_screen.dart';
 import 'models/video_model.dart';
 
-class UserHomeScreen extends StatelessWidget {
-  const UserHomeScreen({super.key});
+class CategoryVideosScreen extends StatelessWidget {
+  final String category;
+  const CategoryVideosScreen({super.key, required this.category});
 
-  Stream<List<VideoModel>> getVideos() {
+  Stream<List<VideoModel>> getVideosByCategory() {
+    print('Filter category: $category'); // debug
     return FirebaseFirestore.instance
         .collection('videos')
+        .where('category', isEqualTo: category)
         .orderBy('uploadedAt', descending: true)
         .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
+        .map((snapshot) {
+          print('Found docs: ${snapshot.docs.length}'); // debug
+          return snapshot.docs
               .map((doc) => VideoModel.fromMap(doc.data(), doc.id))
-              .toList(),
-        );
+              .toList();
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Videolar ro‘yxati')),
+      appBar: AppBar(title: Text(category)),
       body: StreamBuilder<List<VideoModel>>(
-        stream: getVideos(),
+        stream: getVideosByCategory(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

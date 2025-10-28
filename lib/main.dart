@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:mumtozadmin/user_home_scrren.dart';
 import 'firebase_options.dart';
+
+// ✅ To‘g‘ri importlar
 import 'admin_upload_screen.dart';
+import 'user_home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +21,7 @@ class MyApp extends StatelessWidget {
       title: 'Video App',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const RoleSelector(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
