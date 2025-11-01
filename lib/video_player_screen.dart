@@ -5,11 +5,15 @@ import 'package:chewie/chewie.dart';
 class VideoPlayerScreen extends StatefulWidget {
   final String videoUrl;
   final String title;
+  final String description;
+  final bool fullscreen;
 
   const VideoPlayerScreen({
     super.key,
     required this.videoUrl,
     required this.title,
+    required this.description,
+    this.fullscreen = false,
   });
 
   @override
@@ -50,11 +54,36 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: widget.fullscreen ? null : AppBar(title: Text(widget.title)),
       body: Center(
         child: _isLoading
             ? const CircularProgressIndicator()
-            : Chewie(controller: _chewieController!),
+            : Column(
+                children: [
+                  AspectRatio(
+                    aspectRatio: _videoController.value.aspectRatio,
+                    child: Chewie(controller: _chewieController!),
+                  ),
+                  if (!widget.fullscreen)
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(widget.description),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
       ),
     );
   }

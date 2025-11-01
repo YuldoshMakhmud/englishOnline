@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -18,13 +19,17 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
 
-  // Oldindan mavjud kategoriyalar
   final List<String> categories = [
-    'Reading',
-    'Listining',
-    'Writing',
-    'Speaking',
+    'reading',
+    'listening',
+    'writing',
+    'speaking',
   ];
+
+  Future<void> _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
 
   Future<void> _pickAndUploadVideo() async {
     final result = await FilePicker.platform.pickFiles(
@@ -58,8 +63,6 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
         );
 
         final uploadTask = storageRef.putFile(file);
-
-        // Progressni kuzatish
         uploadTask.snapshotEvents.listen((event) {
           setState(() {
             _progress = event.bytesTransferred / event.totalBytes;
@@ -69,15 +72,16 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
         final snapshot = await uploadTask;
         final downloadUrl = await snapshot.ref.getDownloadURL();
 
-        // Firestore’ga saqlash
         await FirebaseFirestore.instance.collection('videos').add({
           'title': _titleController.text.isEmpty
               ? 'No title'
               : _titleController.text,
           'category': _categoryController.text.isEmpty
-              ? 'Boshqa'
-              : _categoryController.text,
+              ? 'boshqa'
+              : _categoryController.text.trim().toLowerCase(),
           'url': downloadUrl,
+          'description':
+              'Bu video ${_titleController.text} haqida ma’lumot beradi.',
           'uploadedAt': FieldValue.serverTimestamp(),
         });
 
@@ -104,7 +108,16 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('👨‍💼 Admin Panel - Video yuklash')),
+      appBar: AppBar(
+        title: const Text('👨‍💼 Admin Panel - Video yuklash'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () => _logout(context),
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -114,8 +127,6 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
               decoration: const InputDecoration(labelText: '🎬 Video nomi'),
             ),
             const SizedBox(height: 8),
-
-            // 🔽 Kategoriya matn + popup
             TextField(
               controller: _categoryController,
               decoration: InputDecoration(
@@ -137,8 +148,6 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // 📤 Yuklash tugmasi
             ElevatedButton.icon(
               onPressed: _isUploading ? null : _pickAndUploadVideo,
               icon: const Icon(Icons.video_library),
@@ -146,22 +155,17 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                   ? const Text('Yuklanmoqda...')
                   : const Text('Video tanlash va yuklash'),
             ),
-
-            // 📊 Yuklanish progress
             if (_isUploading)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: LinearProgressIndicator(value: _progress),
               ),
-
             const SizedBox(height: 20),
             const Text(
               '📋 Yuklangan videolar',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(height: 8),
-
-            // 🔥 Firestore’dan yuklangan videolarni chiqarish
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
